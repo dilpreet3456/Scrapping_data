@@ -1,0 +1,63 @@
+from bs4 import BeautifulSoup
+import requests
+
+// extracting data from the URL free we use and download the pages using a loop
+
+URL ="https://quotes.toscrape.com/page/1/"
+
+page_count = 1
+ 
+while True:
+    URL = f"https://quotes.toscrape.com/page/{page_count}/"
+    response = requests.get(URL)
+
+    soup = BeautifulSoup(response.text,'lxml')
+    quotes = soup.select("div.quote")
+
+    if not quotes:
+        print("No more quotes found. Exiting.")
+        break
+    with open(f"scraped_data/quotes{page_count}.html","w",encoding="utf-8")as f:
+        f.write(response.text)
+        print(f"downloaded page {page_count}")
+
+    page_count +=1
+
+//
+
+# extract useful information
+import os
+
+page_count = 1
+life_quotes = []
+
+while True:
+    file_path = f"scraped_data/quotes{page_count}.html"
+
+    if not os.path.exists(file_path):
+        print("No more files to process. Exiting.")
+        break
+    with open(file_path,"r",encoding="utf-8")as f:
+        html_content = f.read()
+        print(f"Processing quotes{page_count}.html")
+
+    soup = BeautifulSoup(html_content,"lxml")
+    all_quotes = soup.select("div.quote")
+    
+
+    for quote in all_quotes:
+        all_tags = []
+
+        for t in quote.select(".tags .tag"):
+            all_tags.append(t.get_text())
+        
+        # print(all_tags)
+
+        if "life" in all_tags:
+            text = quote.select_one("span.text").get_text()
+            author = quote.select_one("small.author").get_text()
+            print(f"{text}_{author}")
+            life_quotes.append(f"{text} - {author}")
+        print(f"processed file quotes{page_count}.html")
+        page_count += 1
+    print(life_quotes)
